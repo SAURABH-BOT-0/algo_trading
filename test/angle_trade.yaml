@@ -1,0 +1,41 @@
+Parameters1:
+  upper_level: 35200
+  lower_level: 34800
+  upper_symbol: 'BANKNIFTY12AUG2135500CE'
+  lower_symbol: 'BANKNIFTY12AUG2134400PE'
+  upper_target: 40
+  lower_target: 40
+
+
+Parameters2:
+  upper_level: 
+    level: 
+      NIFTY: 19482 
+      BANKNIFTY: 60000
+  lower_level: 
+    level:
+      NIFTY: 19473
+      BANKNIFTY: 20000 
+  upper_target: 
+    NIFTY: 19484
+    BANKNIFTY: 6000
+  lower_target: 
+    NIFTY: 19470
+    BANKNIFTY: 20
+  sl_upper: 
+    NIFTY: 19470
+    BANKNIFTY: 60000
+  sl_lower: 
+    NIFTY: 19477
+    BANKNIFTY: 60000
+  strike_ce:
+    NIFTY: 2
+    BANKNIFTY: 1  
+  strike_pe:
+    NIFTY: 1
+    BANKNIFTY: 2
+  Qty:
+    NIFTY: 50
+    BANKNIFTY: 25
+  expiry: '2023-07-20'
+
