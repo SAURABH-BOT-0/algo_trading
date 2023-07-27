@@ -244,5 +244,5 @@ while True:
 
 				print("sell in ......................", name)
 				traded_stocks.append(name)
-			# time.sleep(0.60)
+			time.sleep(1)
 #strategy_end_here!!!!!
