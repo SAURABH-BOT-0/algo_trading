@@ -129,7 +129,7 @@ access_token= response["access_token"]
 fyers = fyersModel.FyersModel(client_id=client_id, token=access_token, log_path=os.getcwd())
 print(fyers.get_profile())
 traded_stocks = []
-max_no_of_trades = 4 #1kam ke rakhna hai 
+max_no_of_trades = 9 #1kam ke rakhna hai 
 
 watchlist = ['ABB', 'ABBOTINDIA', 'ABCAPITAL', 'ABFRL', 'ACC', 'ADANIENT', 'ADANIGREEN', 'ADANIPORTS', 'ADANITRANS', 'ALKEM', 'AMBUJACEM', 'APOLLOHOSP', 'ASHOKLEY', 'ASIANPAINT', 'ASTRAL', 'AUBANK', 'AUROPHARMA', 'AWL', 'AXISBANK', 'BAJAJ-AUTO', 'BAJAJFINSV', 'BAJAJHLDNG', 'BAJFINANCE', 'BALKRISIND', 'BANDHANBNK', 'BANKBARODA', 'BANKINDIA', 'BATAINDIA', 'BEL', 'BERGEPAINT', 'BHARATFORG', 'BHARTIARTL', 'BHEL', 'BIOCON', 'BPCL', 'BRITANNIA', 'CANBK', 'CHOLAFIN', 'CIPLA', 'CLEAN', 'COALINDIA', 'COFORGE', 'COLPAL', 'CONCOR', 'COROMANDEL', 'CROMPTON', 'CUMMINSIND', 'DALBHARAT', 'DEEPAKNTR', 'DELHIVERY', 'DIVISLAB', 'DIXON', 'DLF', 'DMART', 'DRREDDY', 'EICHERMOT', 'EMAMILTD', 'ESCORTS', 'FEDERALBNK', 'FORTIS', 'GAIL', 'GLAND', 'GODREJCP', 'GODREJPROP', 'GRASIM', 'GSPL', 'GUJGASLTD', 'HAL', 'HAVELLS', 'HCLTECH', 'HDFC', 'HDFCAMC', 'HDFCBANK', 'HDFCLIFE', 'HEROMOTOCO', 'HINDALCO', 'HINDPETRO', 'HINDUNILVR', 'HINDZINC', 'HONAUT', 'ICICIBANK', 'ICICIGI', 'ICICIPRULI', 'IDEA', 'IDFCFIRSTB', 'IEX', 'IGL', 'INDHOTEL', 'INDIAMART', 'INDIANB', 'INDIGO', 'INDUSINDBK', 'INDUSTOWER', 'INFY', 'IOC', 'IPCALAB', 'ISEC', 'ITC', 'JINDALSTEL', 'JSWENERGY', 'JSWSTEEL', 'JUBLFOOD', 'KOTAKBANK', 'L&TFH', 'LALPATHLAB', 'LAURUSLABS', 'LICHSGFIN', 'LICI', 'LT', 'LTIM', 'LTTS', 'LUPIN', 'M&M', 'M&MFIN', 'MARICO', 'MARUTI', 'MAXHEALTH', 'MFSL', 'MOTHERSON', 'MPHASIS', 'MRF', 'MSUMI', 'MUTHOOTFIN', 'NAM-INDIA', 'NATIONALUM', 'NAUKRI', 'NAVINFLUOR', 'NESTLEIND', 'NTPC', 'NYKAA', 'OBEROIRLTY', 'OFSS', 'OIL', 'ONGC', 'PAGEIND',  'PERSISTENT', 'PETRONET', 'PFC', 'PGHH', 'PIDILITIND', 'PIIND', 'PNB', 'POLICYBZR', 'POLYCAB', 'POONAWALLA', 'POWERGRID', 'PRESTIGE', 'RAMCOCEM', 'RECLTD', 'RELIANCE', 'SAIL', 'SBICARD', 'SBILIFE', 'SBIN', 'SHREECEM', 'SIEMENS', 'SONACOMS', 'SRF', 'SUNPHARMA', 'SUNTV', 'SYNGENE', 'TATACHEM', 'TATACOMM', 'TATACONSUM', 'TATAELXSI', 'TATAMOTORS', 'TATAPOWER', 'TATASTEEL', 'TCS', 'TECHM', 'TITAN', 'TORNTPHARM', 'TORNTPOWER', 'TRENT', 'TRIDENT', 'TTML', 'UBL', 'ULTRACEMCO', 'UNIONBANK', 'UPL', 'VBL', 'VEDL', 'VOLTAS', 'WHIRLPOOL', 'WIPRO', 'YESBANK', 'ZEEL', 'ZOMATO', 'ZYDUSLIFE']
 
@@ -195,13 +195,13 @@ while True:
 				diff_buy = (num2_buy - num1_buy).round(1)
 		
 			# gap = round((openx/df.close-1)*100, 2)
-			buy_target = round(Ltp*0.01, 1)#.iloc[-1]
-			buy_stoploss_stop = round(Ltp*0.01, 1)#.iloc[-1]
-			sell_target = round(Ltp*0.01, 1)#.iloc[-1]
-			sell_stoploss_stop = round(Ltp*0.01, 1)#.iloc[-1]
+			buy_target = round(Ltp*0.01,2)#.iloc[-1]
+			buy_stoploss_stop = round(Ltp*0.01,.5)#.iloc[-1]
+			sell_target = round(Ltp*0.01,2)#.iloc[-1]
+			sell_stoploss_stop = round(Ltp*0.01,.5)#.iloc[-1]
 			buy_stoploss = compare(a=buy_stoploss_stop, b=diff_buy)
 			sell_stoploss = compare(a=sell_stoploss_stop, b=diff_sell)
-			capital = 20000
+			capital = 5000
 			qty = int(capital/Ltp)
 
 			if (positive_crossover) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
