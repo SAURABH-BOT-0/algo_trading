@@ -234,10 +234,10 @@ while True:
 						"takeProfit":buy_target
 						}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
 				print(fyers.place_order(data))
-				logger.info(f"{fyers.place_order(data)})
+				# logger.info(f"{fyers.place_order(data)})
 
 				print("buy in ......................", name)
-				logger.info(f"buy in ......................, {name}")
+				# logger.info(f"buy in ......................, {name}")
 				traded_stocks.append(name)
 			if (negative_crossover) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
 				# traded_stocks.append(name)
