@@ -12,12 +12,25 @@ import sys
 import pdb
 import os
 from datetime import datetime, timedelta
-# import anurag_indicators as ai
+import logging
 import talib as ta
-# import pandas_ta as ta
 
+def setup_logger(logger_name):
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.INFO)
+
+    if not logger.handlers:  # Check if handlers already exist to avoid duplication
+        file_handler = logging.FileHandler(os.getcwd()+'/tokens_logs/'+logger_name+'.log')
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        file_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+
+    logger.propagate = False  # Disable propagation from the root logger
+
+    return logger
 ##login_function_start_from_here
-
+logger=setup_logger(main_file[:len(main_file)-3])
 APP_ID =  "T6QAO808F1"#"0YW29QZVF0" # App ID from myapi dashboard is in the form appId-appType. Example - EGNI8CE27Q-100, In this code EGNI8CE27Q will be APP_ID and 100 will be the APP_TYPE
 APP_TYPE = "100"
 SECRET_KEY = '2PTNKPAX8W'#'R4FV65PN0V'
@@ -221,8 +234,10 @@ while True:
 						"takeProfit":buy_target
 						}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
 				print(fyers.place_order(data))
+				logger.info(f"{fyers.place_order(data)})
 
 				print("buy in ......................", name)
+				logger.info(f"buy in ......................, {name}")
 				traded_stocks.append(name)
 			if (negative_crossover) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
 				# traded_stocks.append(name)
