@@ -253,8 +253,7 @@ while True:
 					}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
 			print(fyers.place_order(data))
 			print(f"sell in......................", name)
-
-		    time.sleep(1)
+		time.sleep(1)
 
 
 		# df.to_csv("VWAP_CHECK.csv", index=True)
