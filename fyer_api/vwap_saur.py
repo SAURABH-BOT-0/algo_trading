@@ -254,7 +254,7 @@ while True:
 			print(fyers.place_order(data))
 			print(f"sell in......................", name)
 
-		# time.sleep(0.40)
+		    time.sleep(1)
 
 
 		# df.to_csv("VWAP_CHECK.csv", index=True)

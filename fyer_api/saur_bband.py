@@ -30,7 +30,7 @@ def setup_logger(logger_name):
 
     return logger
 ##login_function_start_from_here
-logger=setup_logger(main_file[:len(main_file)-3])
+#logger=setup_logger(main_file[:len(main_file)-3])
 APP_ID =  "T6QAO808F1"#"0YW29QZVF0" # App ID from myapi dashboard is in the form appId-appType. Example - EGNI8CE27Q-100, In this code EGNI8CE27Q will be APP_ID and 100 will be the APP_TYPE
 APP_TYPE = "100"
 SECRET_KEY = '2PTNKPAX8W'#'R4FV65PN0V'
@@ -208,9 +208,9 @@ while True:
 				diff_buy = (num2_buy - num1_buy).round(1)
 		
 			# gap = round((openx/df.close-1)*100, 2)
-			buy_target = round(Ltp*0.01,2)#.iloc[-1]
+			buy_target = round(Ltp*0.01,1)#.iloc[-1]
 			buy_stoploss_stop = round(Ltp*0.01,1)#.iloc[-1]
-			sell_target = round(Ltp*0.01,2)#.iloc[-1]
+			sell_target = round(Ltp*0.01,1)#.iloc[-1]
 			sell_stoploss_stop = round(Ltp*0.01,1)#.iloc[-1]
 			buy_stoploss = compare(a=buy_stoploss_stop, b=diff_buy)
 			sell_stoploss = compare(a=sell_stoploss_stop, b=diff_sell)
