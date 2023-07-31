@@ -209,9 +209,9 @@ while True:
 		
 			# gap = round((openx/df.close-1)*100, 2)
 			buy_target = round(Ltp*0.01,2)#.iloc[-1]
-			buy_stoploss_stop = round(Ltp*0.01,.5)#.iloc[-1]
+			buy_stoploss_stop = round(Ltp*0.01,1)#.iloc[-1]
 			sell_target = round(Ltp*0.01,2)#.iloc[-1]
-			sell_stoploss_stop = round(Ltp*0.01,.5)#.iloc[-1]
+			sell_stoploss_stop = round(Ltp*0.01,1)#.iloc[-1]
 			buy_stoploss = compare(a=buy_stoploss_stop, b=diff_buy)
 			sell_stoploss = compare(a=sell_stoploss_stop, b=diff_sell)
 			capital = 5000
