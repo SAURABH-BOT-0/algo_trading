@@ -203,7 +203,7 @@ while True:
 		sell_stoploss_stop = round(Ltp*0.01, 1)#.iloc[-1]
 		buy_stoploss = compare(a=buy_stoploss_stop, b=diff_buy)
 		sell_stoploss = compare(a=sell_stoploss_stop, b=diff_sell)
-		capital = 20000
+		capital = 5000
 		qty = int(capital/Ltp)
 
 
