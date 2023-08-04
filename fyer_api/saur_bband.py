@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import logging
 import talib as ta
 
+loss_per_trade=50
 def setup_logger(logger_name):
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
@@ -30,7 +31,9 @@ def setup_logger(logger_name):
 
     return logger
 ##login_function_start_from_here
-#logger=setup_logger(main_file[:len(main_file)-3])
+main_file=os.path.basename(__file__)
+logger=setup_logger(main_file[:len(main_file)-3])
+
 APP_ID =  "T6QAO808F1"#"0YW29QZVF0" # App ID from myapi dashboard is in the form appId-appType. Example - EGNI8CE27Q-100, In this code EGNI8CE27Q will be APP_ID and 100 will be the APP_TYPE
 APP_TYPE = "100"
 SECRET_KEY = '2PTNKPAX8W'#'R4FV65PN0V'
@@ -62,26 +65,26 @@ ERROR = -1
 ##login_request_start_from_here!!!
 
 def send_login_otp(fy_id, app_id):
-	try:
-		result_string = requests.post(url=URL_SEND_LOGIN_OTP, json= {"fy_id": fy_id, "app_id": app_id })
-		if result_string.status_code != 200:
-			return [ERROR, result_string.text]
-		result = json.loads(result_string.text)
-		request_key = result["request_key"]
-		return [SUCCESS, request_key]
-	except Exception as e:
-		return [ERROR, e]
+    try:
+        result_string = requests.post(url=URL_SEND_LOGIN_OTP, json= {"fy_id": fy_id, "app_id": app_id })
+        if result_string.status_code != 200:
+            return [ERROR, result_string.text]
+        result = json.loads(result_string.text)
+        request_key = result["request_key"]
+        return [SUCCESS, request_key]
+    except Exception as e:
+        return [ERROR, e]
 
 def verify_totp(request_key, totp):
-	try:
-		result_string = requests.post(url=URL_VERIFY_TOTP, json={"request_key": request_key,"otp": totp})
-		if result_string.status_code != 200:
-			return [ERROR, result_string.text]
-		result = json.loads(result_string.text)
-		request_key = result["request_key"]
-		return [SUCCESS, request_key]
-	except Exception as e:
-		return [ERROR, e]
+    try:
+        result_string = requests.post(url=URL_VERIFY_TOTP, json={"request_key": request_key,"otp": totp})
+        if result_string.status_code != 200:
+            return [ERROR, result_string.text]
+        result = json.loads(result_string.text)
+        request_key = result["request_key"]
+        return [SUCCESS, request_key]
+    except Exception as e:
+	    return [ERROR, e]
 
 session = accessToken.SessionModel(client_id=client_id, secret_key=SECRET_KEY, redirect_uri=REDIRECT_URI,
 							response_type='code', grant_type='authorization_code')
@@ -94,21 +97,20 @@ urlToActivate = session.generate_authcode()
 send_otp_result = send_login_otp(fy_id=FY_ID, app_id=APP_ID_TYPE)
 
 if send_otp_result[0] != SUCCESS:
-	print(f"send_login_otp failure - {send_otp_result[1]}")
-	sys.exit()
+    print(f"send_login_otp failure - {send_otp_result[1]}")
+    sys.exit()
 else:
-	print("send_login_otp success")
+    print("send_login_otp success")
 
 
 # Step 2 - Verify totp and get request key from verify_otp API
 for i in range(1,3):
-	request_key = send_otp_result[1]
-	verify_totp_result = verify_totp(request_key=request_key, totp=pyotp.TOTP(TOTP_KEY).now())
-	if verify_totp_result[0] != SUCCESS:
+	request_key=send_otp_result[1]
+	verify_totp_result=verify_totp(request_key=request_key, totp=pyotp.TOTP(TOTP_KEY).now())
+	if verify_totp_result[0]!=SUCCESS:
 		print(f"verify_totp_result failure - {verify_totp_result[1]}")
 		time.sleep(1)
 	else:
-		# print(f"verify_totp_result success {verify_totp_result}")
 		break
 
 request_key_2 = verify_totp_result[1]
@@ -153,23 +155,28 @@ while True:
 
 	now = datetime.now()
 	current_time = now.strftime("%H:%M:%S")
-
+	logger.info(f"{current_time}")
 	if(current_time >= "10:01:05"):    
 
 		for name in watchlist:
 			today = datetime.now().strftime("%A")
+			logger.info(f"{today}")
 			if today == 'Monday':
 				day = 3
 			else:
 				day = 1	
 			try:			
 				datal = {"symbols":f"{exchange}:{name}-{eq}"}#,"ohlcv_flag":"1"}
+				logger.info({"symbols":f"{exchange}:{name}-{eq}"})
+
 				Ltp = fyers.quotes(datal) ['d'] [0] ['v'] ['lp']
+				logger.info(f" LTP: {Ltp}")
 				# print(Ltp)
 				from_datetime = datetime.now() - timedelta(days=day)     # From last & days
 				to_datetime = datetime.now().strftime('%Y-%m-%d')
 				data = {"symbol":f"{exchange}:{name}-{eq}","resolution":"15","date_format":"1","range_from":from_datetime.strftime('%Y-%m-%d'), "range_to":to_datetime,"cont_flag":"1"}
 				nx = fyers.history(data)
+				# logger.info(f" Data : {nx}")
 				# print(nx)
 				cols = ['datetime','open','high','low','close','volume']
 				df = pd.DataFrame.from_dict(nx['candles'])
@@ -178,15 +185,27 @@ while True:
 				df['datetime'] = pd.to_datetime(df['datetime'],unit = "s")
 				df['datetime'] = df['datetime'].dt.tz_localize('utc').dt.tz_convert('Asia/Kolkata')
 				df['datetime'] = df['datetime'].dt.tz_localize(None)
+
 				df = df.set_index('datetime')
+				logger.info(f"DF : {df}")
+
 				print(f"scanning in",name)
+				logger.info(f"scanning in {name}")
+
 			except Exception as e:
 				print("error in data fetching")
+				logger.info("error in data fetching")
+
 			df['upperband'], df['middleband'], df['lowerband'] = ta.BBANDS(df['close'], timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
+			# logger.info(f"Upper band{df['upperband']} Middleband: {df['middleband']} Lower band : {df['lowerband']} ")
 
 			positive_crossover = (df['open'][25] >= df['close'][25]) and (df['open'][26] >= df['close'][26]) and (df['lowerband'][25] >= df['close'][25]) and (df['lowerband'][26] >= df['close'][26]) and (df['lowerband'][27] <= df['close'][27]) #and (df['high'][27] <= Ltp)  
 			negative_crossover =  (df['open'][25] <= df['close'][25]) and (df['open'][26] <= df['close'][26]) and (df['upperband'][25] <= df['close'][25]) and (df['upperband'][26] <= df['close'][26]) and (df['upperband'][27] >= df['close'][27]) #and (df['low'][27] >= Ltp)
 			# pdb.set_trace()
+			# print(df['upperband'][27],df['close'][27])
+			high_27=df['high'].iloc[27]
+			low_27=df['low'].iloc[27]
+			# print(high_27,low_27)
 			def compare(a, b):
 				if (a < b):
 					# print(a)
@@ -215,13 +234,12 @@ while True:
 			buy_stoploss = compare(a=buy_stoploss_stop, b=diff_buy)
 			sell_stoploss = compare(a=sell_stoploss_stop, b=diff_sell)
 			capital = 5000
-			qty = int(capital/Ltp)
 
 			if (positive_crossover) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
 
 				data = {
 						"symbol":f"{exchange}:{name}-{eq}",
-						"qty":qty,
+						"qty":round(loss_per_trade/(high_27-low_27)),
 						"type":2,
 						"side":1,
 						"productType":"BO",
@@ -234,16 +252,16 @@ while True:
 						"takeProfit":buy_target
 						}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
 				print(fyers.place_order(data))
-				# logger.info(f"{fyers.place_order(data)})
+				logger.info(f"{fyers.place_order(data)}")
 
 				print("buy in ......................", name)
-				# logger.info(f"buy in ......................, {name}")
+				logger.info(f"buy in ......................, {name}")
 				traded_stocks.append(name)
 			if (negative_crossover) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
 				# traded_stocks.append(name)
 				data = {
 						"symbol":f"{exchange}:{name}-{eq}",
-						"qty":qty,
+						"qty":round(loss_per_trade/(high_27-low_27)),
 						"type":2,
 						"side":-1,
 						"productType":"BO",
@@ -256,8 +274,11 @@ while True:
 						"takeProfit":sell_target
 						}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
 				print(fyers.place_order(data))
+				logger.info(fyers.place_order(data))
 
 				print("sell in ......................", name)
+				logger.info(f"sell in ...................... {name}")
+
 				traded_stocks.append(name)
 			time.sleep(1)
 #strategy_end_here!!!!!
