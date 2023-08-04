@@ -21,7 +21,7 @@ def setup_logger(logger_name):
     logger.setLevel(logging.INFO)
 
     if not logger.handlers:  # Check if handlers already exist to avoid duplication
-        file_handler = logging.FileHandler(os.getcwd()+'/tokens_logs/'+logger_name+'.log')
+        file_handler = logging.FileHandler(os.getcwd()+logger_name+'.log')
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
 

@@ -134,7 +134,7 @@ watchlist = ['ABB', 'ABBOTINDIA', 'ABCAPITAL', 'ABFRL', 'ACC', 'ADANIENT', 'ADAN
 
 exchange = "NSE"
 eq = "EQ"
-
+max_no_of_trades=9
 while True:
 
 	for name in watchlist:
@@ -220,7 +220,7 @@ while True:
 
 			data = {
 					"symbol":f"{exchange}:{name}-{eq}",
-					"qty":qty,
+					"qty":round(max_loss_per_trade/(high_candl-low_candle)),
 					"type":2,
 					"side":1,
 					"productType":"BO",
@@ -239,7 +239,7 @@ while True:
 
 			data = {
 					"symbol":f"{exchange}:{name}-{eq}",
-					"qty":qty,
+					"qty":round(max_loss_per_trade/(high_candl-low_candle)),
 					"type":2,
 					"side":-1,
 					"productType":"BO",
