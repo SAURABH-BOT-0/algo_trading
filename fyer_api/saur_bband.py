@@ -225,7 +225,7 @@ while True:
 				diff_buy = (num1_buy - num2_buy).round(1)
 			else:
 				diff_buy = (num2_buy - num1_buy).round(1)
-		    qty=round(loss_per_trade/(high_27-low_27))
+		    	qty=round(loss_per_trade/(high_27-low_27))
 			# gap = round((openx/df.close-1)*100, 2)
 			buy_target = round(Ltp*0.01,1)#.iloc[-1]
 			buy_stoploss_stop = round(Ltp*0.01,1)#.iloc[-1]
