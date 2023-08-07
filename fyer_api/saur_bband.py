@@ -205,7 +205,7 @@ while True:
 			# print(df['upperband'][27],df['close'][27])
 			high_27=df['high'].iloc[27]
 			low_27=df['low'].iloc[27]
-			# print(high_27,low_27)
+			print(high_27,low_27)
 			def compare(a, b):
 				if (a < b):
 					# print(a)
@@ -225,7 +225,7 @@ while True:
 				diff_buy = (num1_buy - num2_buy).round(1)
 			else:
 				diff_buy = (num2_buy - num1_buy).round(1)
-		
+		    qty=round(loss_per_trade/(high_27-low_27))
 			# gap = round((openx/df.close-1)*100, 2)
 			buy_target = round(Ltp*0.01,1)#.iloc[-1]
 			buy_stoploss_stop = round(Ltp*0.01,1)#.iloc[-1]
@@ -239,7 +239,7 @@ while True:
 
 				data = {
 						"symbol":f"{exchange}:{name}-{eq}",
-						"qty":round(loss_per_trade/(high_27-low_27)),
+						"qty":qty,
 						"type":2,
 						"side":1,
 						"productType":"BO",
@@ -261,7 +261,7 @@ while True:
 				# traded_stocks.append(name)
 				data = {
 						"symbol":f"{exchange}:{name}-{eq}",
-						"qty":round(loss_per_trade/(high_27-low_27)),
+						"qty":qty,
 						"type":2,
 						"side":-1,
 						"productType":"BO",
