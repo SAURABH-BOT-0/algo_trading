@@ -226,10 +226,10 @@ while True:
 			else:
 				diff_buy = (num2_buy - num1_buy).round(1)
 			# gap = round((openx/df.close-1)*100, 2)
-			buy_target = round(Ltp*0.01,1)#.iloc[-1]
-			buy_stoploss_stop = round(Ltp*0.01,1)#.iloc[-1]
-			sell_target = round(Ltp*0.01,1)#.iloc[-1]
-			sell_stoploss_stop = round(Ltp*0.01,1)#.iloc[-1]
+			buy_target = round(Ltp*0.1,1)#.iloc[-1]
+			buy_stoploss_stop = low_27
+			sell_target = round(Ltp*0.1,1)#.iloc[-1]
+			sell_stoploss_stop = high_27#.iloc[-1]
 			buy_stoploss = compare(a=buy_stoploss_stop, b=diff_buy)
 			sell_stoploss = compare(a=sell_stoploss_stop, b=diff_sell)
 			capital = 5000
@@ -251,7 +251,7 @@ while True:
 						"takeProfit":buy_target
 						}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
 				print(fyers.place_order(data))
-				logger.info(f"{fyers.place_order(data)}")
+				#logger.info(f"{fyers.place_order(data)}")
 
 				print("buy in ......................", name)
 				logger.info(f"buy in ......................, {name}")
@@ -273,7 +273,7 @@ while True:
 						"takeProfit":sell_target
 						}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
 				print(fyers.place_order(data))
-				logger.info(fyers.place_order(data))
+				#logger.info(fyers.place_order(data))
 
 				print("sell in ......................", name)
 				logger.info(f"sell in ...................... {name}")
