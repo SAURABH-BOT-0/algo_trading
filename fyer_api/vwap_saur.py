@@ -134,7 +134,7 @@ watchlist = ['ABB', 'ABBOTINDIA', 'ABCAPITAL', 'ABFRL', 'ACC', 'ADANIENT', 'ADAN
 
 exchange = "NSE"
 eq = "EQ"
-max_no_of_trades=9
+max_no_of_trades=5
 while True:
 
 	for name in watchlist:
