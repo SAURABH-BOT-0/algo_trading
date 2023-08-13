@@ -31,7 +31,7 @@ PIN = "1236"  # User pin for fyers account
 REDIRECT_URI = "https://127.0.0.1/"  # Redirect url from the app.
 factor2 = pyotp.TOTP(TOTP_KEY).now()
 # print(factor2)
-
+max_loss_per_trade=50
 # pdb.set_trace()
 
 # API endpoints
@@ -136,123 +136,131 @@ exchange = "NSE"
 eq = "EQ"
 max_no_of_trades=5
 while True:
+	curr_time=datetime.now().time().strftime("%H:%M:%S")
+	if(curr_time>="09:40" and curr_time<="15:15"):
+		for name in watchlist:
 
-	for name in watchlist:
+			datal = {"symbols":f"{exchange}:{name}-{eq}"}#,"ohlcv_flag":"1"}
+			Ltp = fyers.quotes(datal) ['d'] [0] ['v'] ['lp']
+			# print(Ltp)
+			try:
+				from_datetime = datetime.now() - timedelta(hours=1)     # From last & days
+				to_datetime = datetime.now().strftime('%Y-%m-%d')
+				data = {"symbol":f"{exchange}:{name}-{eq}","resolution":"5","date_format":"1","range_from":from_datetime.strftime('%Y-%m-%d'), "range_to":to_datetime,"cont_flag":"1"}
+				nx = fyers.history(data)
+				# print(nx)
+				cols = ['datetime','open','high','low','close','volume']
+				df = pd.DataFrame.from_dict(nx['candles'])
+				# df = pd.DataFrame(nx)
+				df.columns = cols
+				df['datetime'] = pd.to_datetime(df['datetime'],unit = "s")
+				df['datetime'] = df['datetime'].dt.tz_localize('utc').dt.tz_convert('Asia/Kolkata')
+				df['datetime'] = df['datetime'].dt.tz_localize(None)
+				df = df.set_index('datetime')
+				print(f"scanning in ",name)
+			except Exception as e:
+				print("error in data fetching")
+			# print(df)
+			# import pandas_ta as ta
+			df['vwap'] = ta.vwap(df['high'], df['low'], df['close'], df['volume']).round(2)#,anchor ='M')
 
-		datal = {"symbols":f"{exchange}:{name}-{eq}"}#,"ohlcv_flag":"1"}
-		Ltp = fyers.quotes(datal) ['d'] [0] ['v'] ['lp']
-		# print(Ltp)
-		try:
-			from_datetime = datetime.now() - timedelta(hours=1)     # From last & days
-			to_datetime = datetime.now().strftime('%Y-%m-%d')
-			data = {"symbol":f"{exchange}:{name}-{eq}","resolution":"5","date_format":"1","range_from":from_datetime.strftime('%Y-%m-%d'), "range_to":to_datetime,"cont_flag":"1"}
-			nx = fyers.history(data)
-			# print(nx)
-			cols = ['datetime','open','high','low','close','volume']
-			df = pd.DataFrame.from_dict(nx['candles'])
-			# df = pd.DataFrame(nx)
-			df.columns = cols
-			df['datetime'] = pd.to_datetime(df['datetime'],unit = "s")
-			df['datetime'] = df['datetime'].dt.tz_localize('utc').dt.tz_convert('Asia/Kolkata')
-			df['datetime'] = df['datetime'].dt.tz_localize(None)
-			df = df.set_index('datetime')
-			print(f"scanning in ",name)
-		except Exception as e:
-			print("error in data fetching")
-		# print(df)
-		# import pandas_ta as ta
-		df['vwap'] = ta.vwap(df['high'], df['low'], df['close'], df['volume']).round(2)#,anchor ='M')
+			df['percnt_buy'] = round((df['vwap']/df['low']-1)*100, 2)
+			df['percnt_sell'] = round((df['vwap']/df['high']-1)*100, 2)
+			# print(gap)
 
-		df['percnt_buy'] = round((df['vwap']/df['low']-1)*100, 2)
-		df['percnt_sell'] = round((df['vwap']/df['high']-1)*100, 2)
-		# print(gap)
+			positive_signal = (df['close'][0] >= df['vwap'][0]) and (df['percnt_buy'][1] <= -0.03) and (df['percnt_buy'][2] <= -0.03) and (df['percnt_buy'][3] <= -0.03) and (df['percnt_buy'][4] <= -0.03) and (df['percnt_buy'][5] <= -0.03)  		
 
-		positive_signal = (df['close'][0] >= df['vwap'][0]) and (df['percnt_buy'][1] <= -0.03) and (df['percnt_buy'][2] <= -0.03) and (df['percnt_buy'][3] <= -0.03) and (df['percnt_buy'][4] <= -0.03) and (df['percnt_buy'][5] <= -0.03)  		
+			negative_signal = (df['close'][0] <= df['vwap'][0]) and (df['percnt_sell'][1] >= 0.03) and (df['percnt_sell'][2] >= 0.03) and (df['percnt_sell'][3] >= 0.03) and (df['percnt_sell'][4] >= 0.03) and (df['percnt_sell'][5] >= 0.03) 		
 
-		negative_signal = (df['close'][0] <= df['vwap'][0]) and (df['percnt_sell'][1] >= 0.03) and (df['percnt_sell'][2] >= 0.03) and (df['percnt_sell'][3] >= 0.03) and (df['percnt_sell'][4] >= 0.03) and (df['percnt_sell'][5] >= 0.03) 		
+			final_buy = (df['low'][-1] <= df['vwap'][-1]) and (df['close'][-1] >= df['vwap'][-1]) and (df['high'][-1] >= Ltp) or (df['low'][-2] <= df['vwap'][-2]) and (df['close'][-2] >= df['vwap'][-2]) and (df['high'][-2] >= Ltp) or (df['low'][-3] <= df['vwap'][-3]) and (df['close'][-3] >= df['vwap'][-3]) and (df['high'][-3] >= Ltp) or (df['low'][-4] <= df['vwap'][-4]) and (df['close'][-4] >= df['vwap'][-4]) and (df['high'][-4] >= Ltp)
 
-		final_buy = (df['low'][-1] <= df['vwap'][-1]) and (df['close'][-1] >= df['vwap'][-1]) and (df['high'][-1] >= Ltp) or (df['low'][-2] <= df['vwap'][-2]) and (df['close'][-2] >= df['vwap'][-2]) and (df['high'][-2] >= Ltp) or (df['low'][-3] <= df['vwap'][-3]) and (df['close'][-3] >= df['vwap'][-3]) and (df['high'][-3] >= Ltp) or (df['low'][-4] <= df['vwap'][-4]) and (df['close'][-4] >= df['vwap'][-4]) and (df['high'][-4] >= Ltp)
+			final_sell = (df['high'][-1] >= df['vwap'][-1]) and (df['close'][-1] <= df['vwap'][-1]) and (df['low'][-1] >= Ltp) or (df['high'][-2] >= df['vwap'][-2]) and (df['close'][-2] <= df['vwap'][-2]) and (df['low'][-2] >= Ltp) or (df['high'][-3] >= df['vwap'][-3]) and (df['close'][-3] <= df['vwap'][-3]) and (df['low'][-3] >= Ltp) or (df['high'][-4] >= df['vwap'][-4]) and (df['close'][-4] <= df['vwap'][-4]) and (df['low'][-4] >= Ltp)
 
-		final_sell = (df['high'][-1] >= df['vwap'][-1]) and (df['close'][-1] <= df['vwap'][-1]) and (df['low'][-1] >= Ltp) or (df['high'][-2] >= df['vwap'][-2]) and (df['close'][-2] <= df['vwap'][-2]) and (df['low'][-2] >= Ltp) or (df['high'][-3] >= df['vwap'][-3]) and (df['close'][-3] <= df['vwap'][-3]) and (df['low'][-3] >= Ltp) or (df['high'][-4] >= df['vwap'][-4]) and (df['close'][-4] <= df['vwap'][-4]) and (df['low'][-4] >= Ltp)
+			#calulation_start_from_here!!
+			def compare(a, b):
+				if (a < b):
+					# print(a)
+					return (a) #- (a < b)
+				else: 
+					return(b)
+				##calculating_diff
+			high_candle=df['high'].iloc[-1]
+			low_candle=df['low'].iloc[-1]
 
-		#calulation_start_from_here!!
-		def compare(a, b):
-			if (a < b):
-				# print(a)
-				return (a) #- (a < b)
-			else: 
-				return(b)
-			##calculating_diff
-		num1_sell = Ltp
-		num2_sell = df['high'].iloc[-1]
-		if num1_sell > num2_sell:
-			diff_sell = (num1_sell - num2_sell).round(1)
-		else:
-			diff_sell = (num2_sell - num1_sell).round(1)
-		num1_buy = Ltp
-		num2_buy = df['low'].iloc[-1]
-		if num1_buy > num2_buy:
-			diff_buy = (num1_buy - num2_buy).round(1)
-		else:
-			diff_buy = (num2_buy - num1_buy).round(1)
+			num1_sell = Ltp
+			num2_sell = df['high'].iloc[-1]
+			if num1_sell > num2_sell:
+				diff_sell = (num1_sell - num2_sell).round(1)
+			else:
+				diff_sell = (num2_sell - num1_sell).round(1)
+			num1_buy = Ltp
+			num2_buy = df['low'].iloc[-1]
+			if num1_buy > num2_buy:
+				diff_buy = (num1_buy - num2_buy).round(1)
+			else:
+				diff_buy = (num2_buy - num1_buy).round(1)
+			
+			# gap = round((openx/df.close-1)*100, 2)
+			buy_target = round(Ltp*0.01, 1)#.iloc[-1]
+			buy_stoploss_stop = round(Ltp*0.01, 1)#.iloc[-1]
+			sell_target = round(Ltp*0.01, 1)#.iloc[-1]
+			sell_stoploss_stop = round(Ltp*0.01, 1)#.iloc[-1]
+			buy_stoploss = compare(a=buy_stoploss_stop, b=diff_buy)
+			sell_stoploss = compare(a=sell_stoploss_stop, b=diff_sell)
+			capital = 5000
+			qty = int(capital/Ltp)
+
+
+
+			#condition start from here!!!
+
+			# if (df['close'][0] >= df['vwap'][0]) and (df['percnt_buy'][1] <= -0.03) and (df['percnt_buy'][2] <= -0.03) and (df['percnt_buy'][3] <= -0.03) and (df['percnt_buy'][4] <= -0.03) and (df['percnt_buy'][5] <= -0.03): #and (df['high'][-1] >= df['vwap'][-1]):
+			# 	print(f"buy in.......................", name)
+
+			# if (df['close'][0] <= df['vwap'][0]) and (df['percnt_sell'][1] >= 0.03) and (df['percnt_sell'][2] >= 0.03) and (df['percnt_sell'][3] >= 0.03) and (df['percnt_sell'][4] >= 0.03) and (df['percnt_sell'][5] >= 0.03): #and (df['high'][-55] >= df['vwap'][-55]) and (df['close'][-55] <= df['vwap'][-55]):
+			# 	print(f"sell in......................", name)
+
+			if (positive_signal) and (final_buy) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
+
+				data = {
+						"symbol":f"{exchange}:{name}-{eq}",
+						"qty":round(max_loss_per_trade/(high_candle-low_candle)),
+						"type":2,
+						"side":1,
+						"productType":"BO",
+						"limitPrice":0,
+						"stopPrice":0,
+						"validity":"DAY",
+						"disclosedQty":0,
+						"offlineOrder":"False",
+						"stopLoss":buy_stoploss,
+						"takeProfit":buy_target
+						}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
+				print(fyers.place_order(data))
+				print(f"buy in.......................", name)
+
+			if (negative_signal) and (final_sell) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
+
+				data = {
+						"symbol":f"{exchange}:{name}-{eq}",
+						"qty":round(max_loss_per_trade/(high_candle-low_candle)),
+						"type":2,
+						"side":-1,
+						"productType":"BO",
+						"limitPrice":0,
+						"stopPrice":0,
+						"validity":"DAY",
+						"disclosedQty":0,
+						"offlineOrder":"False",
+						"stopLoss":sell_stoploss,
+						"takeProfit":sell_target
+						}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
+				print(fyers.place_order(data))
+				print(f"sell in......................", name)
+			time.sleep(1)
 		
-		# gap = round((openx/df.close-1)*100, 2)
-		buy_target = round(Ltp*0.01, 1)#.iloc[-1]
-		buy_stoploss_stop = round(Ltp*0.01, 1)#.iloc[-1]
-		sell_target = round(Ltp*0.01, 1)#.iloc[-1]
-		sell_stoploss_stop = round(Ltp*0.01, 1)#.iloc[-1]
-		buy_stoploss = compare(a=buy_stoploss_stop, b=diff_buy)
-		sell_stoploss = compare(a=sell_stoploss_stop, b=diff_sell)
-		capital = 5000
-		qty = int(capital/Ltp)
-
-
-
-		#condition start from here!!!
-
-		# if (df['close'][0] >= df['vwap'][0]) and (df['percnt_buy'][1] <= -0.03) and (df['percnt_buy'][2] <= -0.03) and (df['percnt_buy'][3] <= -0.03) and (df['percnt_buy'][4] <= -0.03) and (df['percnt_buy'][5] <= -0.03): #and (df['high'][-1] >= df['vwap'][-1]):
-		# 	print(f"buy in.......................", name)
-
-		# if (df['close'][0] <= df['vwap'][0]) and (df['percnt_sell'][1] >= 0.03) and (df['percnt_sell'][2] >= 0.03) and (df['percnt_sell'][3] >= 0.03) and (df['percnt_sell'][4] >= 0.03) and (df['percnt_sell'][5] >= 0.03): #and (df['high'][-55] >= df['vwap'][-55]) and (df['close'][-55] <= df['vwap'][-55]):
-		# 	print(f"sell in......................", name)
-
-		if (positive_signal) and (final_buy) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
-
-			data = {
-					"symbol":f"{exchange}:{name}-{eq}",
-					"qty":round(max_loss_per_trade/(high_candl-low_candle)),
-					"type":2,
-					"side":1,
-					"productType":"BO",
-					"limitPrice":0,
-					"stopPrice":0,
-					"validity":"DAY",
-					"disclosedQty":0,
-					"offlineOrder":"False",
-					"stopLoss":buy_stoploss,
-					"takeProfit":buy_target
-					}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
-			print(fyers.place_order(data))
-			print(f"buy in.......................", name)
-
-		if (negative_signal) and (final_sell) and (name not in traded_stocks) and (len(traded_stocks) <= max_no_of_trades):
-
-			data = {
-					"symbol":f"{exchange}:{name}-{eq}",
-					"qty":round(max_loss_per_trade/(high_candl-low_candle)),
-					"type":2,
-					"side":-1,
-					"productType":"BO",
-					"limitPrice":0,
-					"stopPrice":0,
-					"validity":"DAY",
-					"disclosedQty":0,
-					"offlineOrder":"False",
-					"stopLoss":sell_stoploss,
-					"takeProfit":sell_target
-					}                              ## This is a sample example to place a limit order you can make the further changes based on your requriements 
-			print(fyers.place_order(data))
-			print(f"sell in......................", name)
+	else:
+		print(f"Waiting for timings")
 		time.sleep(1)
 
 
