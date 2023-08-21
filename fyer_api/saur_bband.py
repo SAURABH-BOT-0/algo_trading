@@ -151,6 +151,26 @@ watchlist = ['ABB', 'ABBOTINDIA', 'ABCAPITAL', 'ABFRL', 'ACC', 'ADANIENT', 'ADAN
 exchange = "NSE"
 eq = "EQ"
 
+# def get_prev_day_vwap_value():
+#     global fut_symbol, kite
+#     prev_day_date = dt.today().date() - timedelta(days=1)
+#     while True:
+#         print(prev_day_date)
+#         try:
+#             df = zerodha_utils.get_historical_data(kite, zerodha_utils.get_ins_token(fut_symbol),
+#                                                    prev_day_date.strftime("%Y-%m-%d"),
+#                                                    prev_day_date.strftime("%Y-%m-%d"), '15minute')
+
+#             if len(df) == 0:
+#                 prev_day_date = prev_day_date - timedelta(days=1)
+
+#             if len(df != 0):
+#                 df_vwap = calc_vwap(df)
+#                 print_and_log(f"{df_vwap['VWAP'].iloc[-1]} vwap prev day")
+#                 return df_vwap['VWAP'].iloc[-1]
+#         except Exception as e:
+#             print_and_log(f"Error prev day vwap: {e}")
+
 while True:
 
 	now = datetime.now()
@@ -159,12 +179,6 @@ while True:
 	if(current_time >= "10:01:05"):    
 
 		for name in watchlist:
-			today = datetime.now().strftime("%A")
-			logger.info(f"{today}")
-			if today == 'Monday':
-				day = 3
-			else:
-				day = 1	
 			try:			
 				datal = {"symbols":f"{exchange}:{name}-{eq}"}#,"ohlcv_flag":"1"}
 				logger.info({"symbols":f"{exchange}:{name}-{eq}"})
@@ -172,21 +186,38 @@ while True:
 				Ltp = fyers.quotes(datal) ['d'] [0] ['v'] ['lp']
 				logger.info(f" LTP: {Ltp}")
 				# print(Ltp)
-				from_datetime = datetime.now() - timedelta(days=day)     # From last & days
+
+				from_datetime =(datetime.now() - timedelta(days=1))   # From last & days
 				to_datetime = datetime.now().strftime('%Y-%m-%d')
-				data = {"symbol":f"{exchange}:{name}-{eq}","resolution":"15","date_format":"1","range_from":from_datetime.strftime('%Y-%m-%d'), "range_to":to_datetime,"cont_flag":"1"}
-				nx = fyers.history(data)
+
+				while True:
+					print(from_datetime,to_datetime)
+					data = {"symbol":f"{exchange}:{name}-{eq}","resolution":"15","date_format":"1","range_from":from_datetime.strftime('%Y-%m-%d'), "range_to":to_datetime,"cont_flag":"1"}
+
+					try:
+						nx = fyers.history(data)
+						cols = ['datetime','open','high','low','close','volume']
+						df = pd.DataFrame.from_dict(nx['candles'])
+						# df = pd.DataFrame(nx)
+						df.columns = cols
+						df['datetime'] = pd.to_datetime(df['datetime'],unit = "s")
+						df['datetime'] = df['datetime'].dt.tz_localize('utc').dt.tz_convert('Asia/Kolkata')
+						df['datetime'] = df['datetime'].dt.tz_localize(None)
+
+						df = df.set_index('datetime')
+						
+						if len(df)<=25:
+							from_datetime-=timedelta(days=1)
+							print("one day back")
+						
+						if(len(df)>25):
+							print(df)
+							break
+					except Exception as e:
+						logger.info(f"Error : {e}")
 				# logger.info(f" Data : {nx}")
 				# print(nx)
-				cols = ['datetime','open','high','low','close','volume']
-				df = pd.DataFrame.from_dict(nx['candles'])
-				# df = pd.DataFrame(nx)
-				df.columns = cols
-				df['datetime'] = pd.to_datetime(df['datetime'],unit = "s")
-				df['datetime'] = df['datetime'].dt.tz_localize('utc').dt.tz_convert('Asia/Kolkata')
-				df['datetime'] = df['datetime'].dt.tz_localize(None)
 
-				df = df.set_index('datetime')
 				logger.info(f"DF : {df}")
 
 				print(f"scanning in",name)
